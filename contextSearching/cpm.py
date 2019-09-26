@@ -196,8 +196,48 @@ class context_searching:
                 
                 class cpm_stats_tb_class():
                     cpm_stats_tb = self.cpm_stats_tb 
+                   
+                    # Define a function to get the scores
+                    def get_score(target_idx, cpm_stats_tb, weights = [0.25,0.25,0.25,0.25]):
+
+                        def normalize(x, vec):
+                            """
+                            Normalizing a vector
+                            """
+                            return((x - np.min(vec))/(max(vec) - min(vec)))
+
+                        # Calculate the metrics
+                        abs_mean_diff = abs(cpm_stats_tb['mean'] - target_idx)
+                        abs_median_diff = abs(cpm_stats_tb['median'] - target_idx)
+                        inv_count = 1/cpm_stats_tb['count']
+                        variance = cpm_stats_tb['variance']
+                        
+                        # Create a datatable
+                        cpm_stats_temp = pd.DataFrame()
+                        cpm_stats_temp['abs_mean_diff'] = abs_mean_diff.apply(lambda x: normalize(x,abs_mean_diff))
+                        cpm_stats_temp['abs_median_diff'] = abs_median_diff.apply(lambda x: normalize(x,abs_median_diff))
+                        cpm_stats_temp['inv_count'] = inv_count.apply(lambda x: normalize(x,inv_count))
+                        cpm_stats_temp['variance'] =  variance.apply(lambda x: normalize(x,variance))
+                        cpm_stats_temp.set_index(cpm_stats_tb['tokens'],inplace=True)
+                        
+                        # Calculate the score for each token
+                        score = [sum(cpm_stats_temp.iloc[i,:] * weights) for i in range(cpm_stats_temp.shape[0])]
+                        cpm_stats_temp['score'] = score
+                        
+                        # get the best token
+                        best_token = cpm_stats_temp.sort_values('score').index[0]
+                        best_score = cpm_stats_temp.sort_values('score')['score'][0]
+                        
+                        # Sometimes when the position is close to 0, the target token appears as the top candidate given a very small variance.
+                        if (best_token == self.target_token) & (target_idx != 0):
+                            best_token = cpm_stats_temp.sort_values('score').index[1]
+                            best_score = cpm_stats_temp.sort_values('score')['score'][1]
+                            
+                        return best_token, best_score
+
+                    self.get_score = get_score
                     
-                    def guess_ngram(n = 2):
+                    def guess_ngram(n = 2, weights = [0.25,0.25,0.25,0.25]):
                         """
                         Based on CPM stats tb, construct the Ngrams
                         """
@@ -205,13 +245,15 @@ class context_searching:
                         uniq_indx = np.array(range(-(n-1),n))
 
                         # For each indx in uniq_indx, look up the cm_stats_tb and record the max count
-                        max_count = []
+                        best_scores = []
                         best_tokens = []
 
                         for idx in uniq_indx:
-                            temp_tb = cpm_stats_tb.loc[cpm_stats_tb['median'] == idx,:].sort_values('count',ascending = False)[['tokens','count']].reset_index(drop = True)
-                            max_count.append(temp_tb['count'][0])
-                            best_tokens.append(temp_tb['tokens'][0])
+                            # get the scores for the top candidates for each index
+                            best_token, best_score = self.get_score(target_idx = idx, cpm_stats_tb = self.cpm_stats_tb,\
+                                weights = weights)
+                            best_tokens.append(best_token)
+                            best_scores.append(best_score)
 
                         # Next decide the index window
                         idx_windows = []
@@ -224,12 +266,12 @@ class context_searching:
                         for win in idx_windows:
                             win_array = np.array(win)
                             ngram_candidate.append(" ".join(np.array(best_tokens)[win_array]))
-                            total_score.append(sum(np.array(max_count)[win_array]))
+                            total_score.append(sum(np.array(best_scores)[win_array]))
 
                         output_df = pd.DataFrame({'ngram_candidates':ngram_candidate,\
                                                  "total_scores":total_score})
                            
-                        return output_df.sort_values('total_scores',ascending = False).reset_index(drop = True)
+                        return output_df.sort_values('total_scores',ascending = True).reset_index(drop = True)
                         
                 
                 return cpm_stats_tb_class
