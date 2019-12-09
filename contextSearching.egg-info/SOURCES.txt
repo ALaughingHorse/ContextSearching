@@ -1,0 +1,10 @@
+README.md
+setup.cfg
+setup.py
+contextSearching/__init__.py
+contextSearching/cpm.py
+contextSearching.egg-info/PKG-INFO
+contextSearching.egg-info/SOURCES.txt
+contextSearching.egg-info/dependency_links.txt
+contextSearching.egg-info/requires.txt
+contextSearching.egg-info/top_level.txt

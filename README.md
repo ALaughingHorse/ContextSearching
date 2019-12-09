@@ -114,7 +114,7 @@ from contextSearching import context_searching
 cs = context_searching(target_token=target,doc=corpus['reviews'],left_window=5,right_window=5,padding_token="_empty_")
 ```
 
-In additional to the target token and the corpus, the class requires three more inputs: left/right window and padding token.
+In addition to the target token and the corpus, the class requires three more inputs: left/right window and padding token.
 
 The algorithm takes in the target token and aggresively collect all the words within the specified window. 
 
