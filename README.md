@@ -11,9 +11,9 @@ pip install contextSearching
 
 # Usage
 
-As an example to illustate the usage, we choose the term "break" and the Amazon review corpus for Nintendo Switch where people used the term "break". 
+As an example to illustrate the usage, we choose the term "break" and the Amazon review corpus for Nintendo Switch where people used the term "break". 
 
-From a simple bag-of-words analysis, we know that whenever people mention "break", the product is likely to receive a low star-rating. But we do not know what breaks or any other context around "break." 
+From a simple bag-of-words analysis, we know that whenever people mention "break", the product is likely to receive a low star rating. But we do not know what breaks or any other context around "break." 
 
 ### Preparation
 
@@ -116,9 +116,9 @@ cs = context_searching(target_token=target,doc=corpus['reviews'],left_window=5,r
 
 In addition to the target token and the corpus, the class requires three more inputs: left/right window and padding token.
 
-The algorithm takes in the target token and aggresively collect all the words within the specified window. 
+The algorithm takes in the target token and aggressively collect all the words within the specified window. 
 
-For example, when left_window = 10, it will find the target token within each document of the corpus, then collect all the ten words to the left of the target, recording the relative position. If there is less than 10 words to the left, the algorithm will append the word list with the padding token.
+For example, when left_window is set to 10, it will find the target token within each document of the corpus, then collect all the ten words to the left of the target, recording the relative position. If there are less than 10 words to the left, the algorithm will append the word list with the padding token.
 
 ### Get the Context Probing Matrix
 
@@ -255,7 +255,7 @@ cpm_df.head()
 
 
 
-The column index indicates the relative position. For example, in the first document, the word "button" appears rwo words to the right of the target term "break."
+The column index indicates the relative position. For example, in the first document, the word "button" appears two words to the right of the target term "break".
 
 ### Get the vocabs dictionary
 
@@ -376,7 +376,7 @@ To understand the context, we can look at the statistics of relative positions f
 
 For example,
 
-When the occurances of a term is high, we know that it always appears around the target token;
+When the occurrence of a term is high, we know that it always appears around the target token;
 
 When the variance of a term's relative position is low, we know that it always appears at the same relative location;
 
@@ -459,7 +459,7 @@ For example, when we want to infer what is most likely the word appears to the l
 4. Calculate the variance of the relative positions of the word
 5. Repeat the above on all the collected words and acquire 4 lists of metrics above (abs median difference, abs mean difference, 1/count, variance)
 6. normalize the 4 lists
-7. for each collected word, multiply its 4 metrics with user-defined weights and take sum to get a final score
+7. for each collected word, multiply its 4 metrics with user-defined weights and take the sum to get a final score
 
 The best candidate words at location -1 will have the smallest final score.
 
